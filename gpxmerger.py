@@ -5,6 +5,7 @@ import gpxpy
 import gpxpy.parser as parser
 from gpxpy.gpx import GPXTrackPoint
 from os import path
+import glob   # new logic
 
 # https://fangpenlin.com/posts/2012/08/26/good-logging-practice-in-python/
 logging.basicConfig(level=logging.DEBUG)
@@ -105,13 +106,19 @@ def main(argv):
     logger = logging.getLogger(__name__)
     logger.info("start new merge process")
 
-    track_files = [f for f in argv if is_gpx(f)]
+    # Original logic 
+    # track_files = [f for f in argv if is_gpx(f)]
+
+    # New logic
+    target_file = get_target(argv)
+    target_dir = path.dirname(target_file)
+    track_files = glob.glob(target_dir + '/*.gpx')
+
     points = get_all_points(track_files)
     points = filter(lambda x: x.time is not None, points)
     sorted_points = sorted(points, key=lambda p: p.time)
     xml = to_xml(sorted_points)
 
-    target_file = get_target(argv)
     with open(target_file, 'w') as fp:
         logger.debug('saving "{f}"'.format(f=target_file))
         fp.write(xml)
